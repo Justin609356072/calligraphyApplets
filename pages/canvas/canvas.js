@@ -22,6 +22,7 @@ function Writing(canvasId){
     this.VVV = 1;//快速慢速的分界速度
     this.startPointNum = 9;//必须大于5
     this.pointR = false;//快满速度转折点的半径
+    this.history = [];
 }
 Writing.prototype.paintPoint = function(x1,y1,r1,x2,y2,r2){
     let distance = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
@@ -33,8 +34,8 @@ Writing.prototype.paintPoint = function(x1,y1,r1,x2,y2,r2){
         this.context.beginPath();
         this.context.arc(insideX,insideY,r,0,2*Math.PI,true);
         this.context.fill();
-        this.context.draw(true);
     }
+    this.context.draw(true);
 };
 Writing.prototype.caculateV = function(){//计算最后几个点的平均速度
     let dis = 0,tim = 0;
@@ -96,6 +97,32 @@ Writing.prototype.extendPoint = function(x1,y1,x2,y2,x3,y3){
         return {x:(x3-x2)*size+x3,y:(y3-y2)*size+y3}
     }
 };
+Writing.prototype.clearAll = function(){
+    context.draw();
+    this.history = [];
+};
+Writing.prototype.clearOne = function(){
+    let self = this;
+    context.draw();
+    this.history.splice(this.history.length-1,1);
+    console.log(this.history);
+    for(var i=0;i<this.history.length;i++){
+        for(var j=1;j<this.history[i].length;j++){
+            // this.paintPoint();
+            this.paintPoint(
+                this.history[i][j].x,
+                this.history[i][j].y,
+                this.history[i][j].r,
+                this.history[i][j-1].x,
+                this.history[i][j-1].y,
+                this.history[i][j-1].r
+            );
+            /*this.context.arc(this.history[i][j].x,this.history[i][j].y,this.history[i][j].r,0,2*Math.PI,true);
+            this.context.fill();*/
+        }
+    }
+    // this.context.draw(true);
+};
 Writing.prototype.start = function(e){
     let x = e.touches[0].clientX,y=e.touches[0].clientY;
     this.point.push({x:x,y:y,r:0});
@@ -123,7 +150,7 @@ Writing.prototype.end = function(e){
         this.point[this.point.length-1].r,
     );*/
    let extendFun = function(self){
-       console.log('开始延伸！');
+       //console.log('开始延伸！');
        let result1 = self.extendPoint(self.point[self.point.length-3].x,self.point[self.point.length-3].y,self.point[self.point.length-2].x,self.point[self.point.length-2].y,self.point[self.point.length-1].x,self.point[self.point.length-1].y);
 
        self.point.push({
@@ -139,7 +166,7 @@ Writing.prototype.end = function(e){
            self.point[self.point.length-1].y,
            self.point[self.point.length-1].r,
        );
-       console.log('----');
+       /*console.log('----');
        console.log(
            '\n',
            self.point[self.point.length-2].x,'\n',
@@ -150,7 +177,7 @@ Writing.prototype.end = function(e){
            self.point[self.point.length-1].y,'\n',
            self.point[self.point.length-1].r,'\n',
        );
-       console.log(`x:${self.point[self.point.length-1].x},y:${self.point[self.point.length-1].y},r:${self.point[self.point.length-1].r}`);
+       console.log(`x:${self.point[self.point.length-1].x},y:${self.point[self.point.length-1].y},r:${self.point[self.point.length-1].r}`);*/
        /*self.paintPoint(
            self.point[self.point.length-3].x,
            self.point[self.point.length-3].y,
@@ -171,7 +198,10 @@ Writing.prototype.end = function(e){
    do{
        extendFun(this);
    }while(this.point[this.point.length-1].r>1)
-
+    this.history.push(this.point.map(function(obj){
+        return {x:obj.x,y:obj.y,r:obj.r}
+    }));
+   console.log(this.history);
     this.point = [];
     //console.log(`end!\nmaxDistance:${maxDistance}\nminDiatance:${minDistance}`)
 };
@@ -290,8 +320,8 @@ Page({
     })
   },
   onReady(e){
-      context.drawImage('../../image/logo.jpg', 150,150,100,100);
-      context.draw();
+      /*context.drawImage('../../image/logo.jpg', 150,150,100,100);
+      context.draw();*/
   },
   touchStart(e){
       pen.start(e);
@@ -302,9 +332,15 @@ Page({
   touchEnd(e){
       pen.end(e);
   },
-  tap(e){
+  clearAll(e){
       //console.log(e);
-      context.drawImage('../../image/logo.jpg', 150,150,100,100);
-      context.draw();
+      pen.clearAll();
+      /*context.drawImage('../../image/logo.jpg', 150,150,100,100);
+      context.draw(true);*/
+  },
+  clearOne(e){
+      pen.clearOne();
+      // context.drawImage('../../image/logo.jpg', 150,150,100,100);
+      // context.draw(true);
   }
 })
