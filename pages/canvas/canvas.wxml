@@ -1,0 +1,4 @@
+<view  wx:if="{{show==true}}" >
+    <canvas disable-scroll='true' style="width:100%;height:{{windowHeight}};" canvas-id="firstCanvas" catch:touchmove='touchMove' catch:touchstart='touchStart' catch:touchend='touchEnd'></canvas>
+    <button bindtap='tap'>clear</button>
+</view>
