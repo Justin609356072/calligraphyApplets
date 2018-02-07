@@ -24,7 +24,7 @@ function Writing(canvasId){
     this.pointR = false;//快满速度转折点的半径
     this.history = [];
 }
-Writing.prototype.paintPoint = function(x1,y1,r1,x2,y2,r2){
+Writing.prototype.paintPoint = function(x1,y1,r1,x2,y2,r2,onDraw){
     let distance = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
     let len = Math.ceil(distance/2) ;//步长
     for (var i = 0; i < len; i++) {
@@ -35,7 +35,9 @@ Writing.prototype.paintPoint = function(x1,y1,r1,x2,y2,r2){
         this.context.arc(insideX,insideY,r,0,2*Math.PI,true);
         this.context.fill();
     }
-    this.context.draw(true);
+    if(!onDraw){
+        this.context.draw(true);
+    }
 };
 Writing.prototype.caculateV = function(){//计算最后几个点的平均速度
     let dis = 0,tim = 0;
@@ -82,7 +84,7 @@ Writing.prototype.extendPoint = function(x1,y1,x2,y2,x3,y3){
     let midPoint = fun(x1,y1,x2,y2);
     let result = fun(midPoint.x,midPoint.y,x3,y3);
     return result;*/
-    let size = 9/10;
+    let size = 8/10;
     let distance = 6;
     let x = (x3-x2)+x3;
     let y = (y3-y2)+y3;
@@ -103,25 +105,29 @@ Writing.prototype.clearAll = function(){
 };
 Writing.prototype.clearOne = function(){
     let self = this;
-    context.draw();
+    //context.draw();
     this.history.splice(this.history.length-1,1);
     console.log(this.history);
     for(var i=0;i<this.history.length;i++){
         for(var j=1;j<this.history[i].length;j++){
-            // this.paintPoint();
+
             this.paintPoint(
                 this.history[i][j].x,
                 this.history[i][j].y,
                 this.history[i][j].r,
                 this.history[i][j-1].x,
                 this.history[i][j-1].y,
-                this.history[i][j-1].r
+                this.history[i][j-1].r,
+                true
             );
-            /*this.context.arc(this.history[i][j].x,this.history[i][j].y,this.history[i][j].r,0,2*Math.PI,true);
-            this.context.fill();*/
+            /*
+            this.paintPoint();
+            this.context.arc(this.history[i][j].x,this.history[i][j].y,this.history[i][j].r,0,2*Math.PI,true);
+            this.context.fill();
+            */
         }
     }
-    // this.context.draw(true);
+    this.context.draw();
 };
 Writing.prototype.start = function(e){
     let x = e.touches[0].clientX,y=e.touches[0].clientY;
