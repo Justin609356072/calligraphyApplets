@@ -327,11 +327,14 @@ Page({
       windowHeight:''
   },
   onLoad() {
+      wx.authorize({
+          scope: 'scope.writePhotosAlbum'
+      });
     // wx.getUserInfo();
     let systemInfo = wx.getSystemInfoSync();
     //console.log(this);
     this.setData({
-        windowHeight: systemInfo.windowHeight-50+'px',
+        windowHeight: systemInfo.windowHeight-50,
         show:true
     })
   },
@@ -358,5 +361,40 @@ Page({
       pen.clearOne();
       // context.drawImage('../../image/logo.jpg', 150,150,100,100);
       // context.draw(true);
-  }
+  },
+    save(){
+      console.log(0);
+      let self = this;
+      if(wx.saveImageToPhotosAlbum&&wx.canvasToTempFilePath&&wx.showToast){
+          context.draw(true,setTimeout(function(){
+              wx.canvasToTempFilePath({
+                  canvasId: 'firstCanvas',
+                  success: function(res) {
+                      console.log(res);
+                      wx.saveImageToPhotosAlbum({
+                          filePath:res.tempFilePath,
+                          success:function(res){
+                              console.log(1.1);
+                              wx.showToast({title:`保存成功!`,icon:'none'})
+                          },
+                          fail:function(res){
+                              console.log(1.2);
+                              wx.showToast({title:'保存失败!',icon:'none'})
+                          },
+                      });
+
+                  },
+                  fail:function(res){
+                      console.log(3);
+                      wx.showToast({title:'保存失败!',icon:'none'})
+                  },
+                  complete(res) {
+                      console.log('complete');
+                  }
+              })
+          },100))
+      }else{
+          wx.showToast({title:`您的微信版本太低，请升级后再尝试。`,icon:'none'})
+      }
+    }
 })

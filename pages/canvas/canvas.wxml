@@ -1,5 +1,8 @@
 <view  wx:if="{{show==true}}" >
-    <canvas disable-scroll='true' style="width:100%;height:{{windowHeight}};" canvas-id="firstCanvas" catch:touchmove='touchMove' catch:touchstart='touchStart' catch:touchend='touchEnd'></canvas>
+    <canvas disable-scroll='true' style="width:100%;height:{{windowHeight}}px;" canvas-id="firstCanvas" catch:touchmove='touchMove' catch:touchstart='touchStart' catch:touchend='touchEnd'></canvas>
+
+    <button class="btn" bindtap=''>nothing</button>
     <button class="btn" bindtap='clearAll'>clearAll</button>
     <button class="btn" bindtap='clearOne'>clearOne</button>
+    <button class="btn" bindtap='save'>save</button>
 </view>
