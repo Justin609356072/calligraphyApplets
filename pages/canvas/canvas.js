@@ -16,11 +16,12 @@ function Writing(canvasId){
     this.context = wx.createCanvasContext('firstCanvas');
     this.penSize = 15;//画笔初始的粗细
     this.point = [];
-    this.linePressure = 10;//笔的压力
+    this.linePressure = 4;//笔的压力,即移动过程中笔迹随速度变化的敏感程度，值越大，变化越慢。
     this.lineMax =35;//慢速最粗的线宽
     this.lineMin =3;//慢速最细的线宽
     this.VVV = 1;//快速慢速的分界速度
     this.startPointNum = 9;//必须大于5
+    this.smoothness = 80;//控制平滑度，一定距离内的平均速度
     this.pointR = false;//快满速度转折点的半径
     this.history = [];
 }
@@ -39,12 +40,21 @@ Writing.prototype.paintPoint = function(x1,y1,r1,x2,y2,r2,onDraw){
         this.context.draw(true);
     }
 };
-Writing.prototype.caculateV = function(){//计算最后几个点的平均速度
+Writing.prototype.caculateV = function(){//计算一段距离内的平均速度
     let dis = 0,tim = 0;
-    for(var i=this.point.length-5;i<this.point.length;i++){
+    /*for(var i=this.point.length-5;i<this.point.length;i++){
         dis+=this.point[i].distance?this.point[i].distance:0;
         if(this.point&&this.point[i-1]&&this.point[i-1].time){
             tim+=this.point[i].time-this.point[i-1].time;
+        }
+    }*/
+    for(var i=this.point.length-1;i>0;i--){
+        dis+=this.point[i].distance?this.point[i].distance:0;
+        if(this.point&&this.point[i-1]&&this.point[i-1].time){
+            tim+=this.point[i].time-this.point[i-1].time;
+        }
+        if(dis>this.smoothness){
+            break;
         }
     }
     let v = dis/tim;
