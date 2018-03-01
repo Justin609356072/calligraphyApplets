@@ -19,7 +19,7 @@ function Writing(canvasId){
     this.linePressure = 4;//笔的压力,即移动过程中笔迹随速度变化的敏感程度，值越大，变化越慢。
     this.lineMax =35;//慢速最粗的线宽
     this.lineMin =3;//慢速最细的线宽
-    this.VVV = 1;//快速慢速的分界速度
+    this.VVV = 1.3;//快速慢速的分界速度
     this.startPointNum = 9;//必须大于5
     this.smoothness = 80;//控制平滑度，一定距离内的平均速度
     this.pointR = false;//快满速度转折点的半径
@@ -114,13 +114,10 @@ Writing.prototype.clearAll = function(){
     this.history = [];
 };
 Writing.prototype.clearOne = function(){
-    let self = this;
-    //context.draw();
     this.history.splice(this.history.length-1,1);
     console.log(this.history);
     for(var i=0;i<this.history.length;i++){
         for(var j=1;j<this.history[i].length;j++){
-
             this.paintPoint(
                 this.history[i][j].x,
                 this.history[i][j].y,
@@ -273,29 +270,29 @@ Writing.prototype.move = function(e){
     }
     let v = dis/tim;*/
     let v = this.caculateV();
-    // if(v<this.VVV){
+    if(v<this.VVV){
         this.point[this.point.length-1].r = Math.min(this.linePressure/v+this.lineMin,this.lineMax)/2;
         this.point[this.point.length-2].r = (this.point[this.point.length-2].r==0)?(this.pointR):(this.point[this.point.length-2].r);//确定快慢分界线之前的一个点的宽度
         this.pointR = false;
-        //console.log(`离散点，第${this.point.length}个点，半径为:${this.point[this.point.length-1].r},前一个点的半径为:${this.point[this.point.length-2].r}，速度为：${v}`);
-        console.log(`离散点，速度为：${v}`);
+        console.log(`离散点，第${this.point.length}个点，半径为:${this.point[this.point.length-1].r},前一个点的半径为:${this.point[this.point.length-2].r}，速度为：${v}`);
+        // console.log(`离散点${this.point.length}，速度为：${v}`);
         //console.log(this.point[this.point.length-1].r);
         let len = Math.ceil(distance/2) ;//步长
-        for (var i = 0; i < len; i++) {
-            let insideX = this.point[this.point.length-2].x + (this.point[this.point.length-1].x-this.point[this.point.length-2].x)*i/len;
-            let insideY = this.point[this.point.length-2].y + (this.point[this.point.length-1].y-this.point[this.point.length-2].y)*i/len;
-            let r = this.point[this.point.length-2].r + (this.point[this.point.length-1].r-this.point[this.point.length-2].r)*i/len;
-            this.context.beginPath();
-            this.context.arc(insideX,insideY,r,0,2*Math.PI,true);
-            this.context.fill();
-        }
-        this.context.draw(true);
-    /*}else{
+        this.paintPoint(
+            this.point[this.point.length-2].x,
+            this.point[this.point.length-2].y,
+            this.point[this.point.length-2].r,
+            this.point[this.point.length-1].x,
+            this.point[this.point.length-1].y,
+            this.point[this.point.length-1].r,
+        );
+
+    }else{
         if(this.pointR===false){
             this.pointR = this.point[this.point.length-2].r;
         }
         this.point[this.point.length-1].r = 0;
-        /!* 转折点处收缩 *!/
+        /* 转折点处收缩 */
         if(this.point[this.point.length-2].r!==0){
             let len = Math.ceil(distance/2) ;//步长
             for (var i = 0; i < len; i++) {
@@ -308,15 +305,15 @@ Writing.prototype.move = function(e){
             }
         }
         this.context.draw(true);
-        /!* !转折点处收缩 *!/
-        //console.log(`贝塞尔，第${this.point.length}个点，半径为${this.pointR}，速度为：${v}`);
-        console.log(`贝塞尔，速度为：${v}`);
+        /* !转折点处收缩 */
+        console.log(`贝塞尔，第${this.point.length}个点，半径为${this.pointR}，速度为：${v}`);
+        // console.log(`贝塞尔，速度为：${v}`);
         this.penSize = this.pointR*2;
         this.context.setLineWidth(this.penSize);
         let x1=this.point[this.point.length-4].x,x2=this.point[this.point.length-3].x,x3=this.point[this.point.length-2].x,x4=this.point[this.point.length-1].x;
         let y1=this.point[this.point.length-4].y,y2=this.point[this.point.length-3].y,y3=this.point[this.point.length-2].y,y4=this.point[this.point.length-1].y;
         this.paintLine(this.context,x1,y1,x2,y2,x3,y3,x4,y4);
-    }*/
+    }
 }
 /* ！构造函数 */
 
@@ -363,8 +360,6 @@ Page({
       // context.draw(true);
   },
     save(){
-      console.log(0);
-      let self = this;
       if(wx.saveImageToPhotosAlbum&&wx.canvasToTempFilePath&&wx.showToast){
           context.draw(true,setTimeout(function(){
               wx.canvasToTempFilePath({
@@ -374,18 +369,15 @@ Page({
                       wx.saveImageToPhotosAlbum({
                           filePath:res.tempFilePath,
                           success:function(res){
-                              console.log(1.1);
                               wx.showToast({title:`保存成功!`,icon:'none'})
                           },
                           fail:function(res){
-                              console.log(1.2);
                               wx.showToast({title:'保存失败!',icon:'none'})
                           },
                       });
 
                   },
                   fail:function(res){
-                      console.log(3);
                       wx.showToast({title:'保存失败!',icon:'none'})
                   },
                   complete(res) {
